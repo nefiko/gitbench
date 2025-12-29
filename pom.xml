@@ -17,6 +17,8 @@
         <module>gitbench-git</module>
         <module>gitbench-core</module>
         <module>gitbench-cli</module>
+        <module>gitbench-storage</module>
+        <module>gitbench-web</module>
     </modules>
 
     <properties>
