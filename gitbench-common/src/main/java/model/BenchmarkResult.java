@@ -86,10 +86,10 @@ public class BenchmarkResult implements Serializable {
     }
 
     public enum BenchmarkMode {
-        THROUGHPUT,        // Operations per unit time
-        AVERAGE_TIME,      // Average time per operation
-        SAMPLE_TIME,       // Samples the time for each operation
-        SINGLE_SHOT_TIME,  // Single invocation time
-        ALL                // All modes
+        THROUGHPUT,
+        AVERAGE_TIME,
+        SAMPLE_TIME,
+        SINGLE_SHOT_TIME,
+        ALL
     }
 }

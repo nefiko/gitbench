@@ -19,49 +19,27 @@ public class BenchmarkComparison implements Serializable {
 
     private BenchmarkResult baselineResult;
 
-
     private double percentageChange;
 
-    /**
-     * Absolute change in average time (in the result's time unit)
-     */
     private double absoluteChange;
 
-    /**
-     * Classification of the change
-     */
     private ChangeType changeType;
 
-    /**
-     * Statistical significance of the change
-     */
     private boolean statisticallySignificant;
 
-    /**
-     * P-value from statistical test
-     */
     private double pValue;
 
-    /**
-     * Confidence level (e.g., 0.95 for 95%)
-     */
     private double confidenceLevel;
 
-    /**
-     * Types of performance changes.
-     */
     public enum ChangeType {
-        SIGNIFICANT_REGRESSION,  // > 10% slower
-        MINOR_REGRESSION,        // 5-10% slower
-        NO_CHANGE,               // -5% to +5%
-        MINOR_IMPROVEMENT,       // 5-10% faster
-        SIGNIFICANT_IMPROVEMENT, // > 10% faster
-        NO_BASELINE              // No baseline to compare against
+        SIGNIFICANT_REGRESSION,
+        MINOR_REGRESSION,
+        NO_CHANGE,
+        MINOR_IMPROVEMENT,
+        SIGNIFICANT_IMPROVEMENT,
+        NO_BASELINE
     }
 
-    /**
-     * Calculate the change type based on percentage change.
-     */
     public static ChangeType calculateChangeType(double percentageChange) {
         if (Double.isNaN(percentageChange)) {
             return ChangeType.NO_BASELINE;
@@ -79,9 +57,6 @@ public class BenchmarkComparison implements Serializable {
         }
     }
 
-    /**
-     * Get a human-readable summary of the comparison.
-     */
     public String getSummary() {
         if (baselineResult == null) {
             return String.format("%s: %.2f ms (no baseline)",

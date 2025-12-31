@@ -15,9 +15,9 @@
     <modules>
         <module>gitbench-common</module>
         <module>gitbench-git</module>
+        <module>gitbench-storage</module>
         <module>gitbench-core</module>
         <module>gitbench-cli</module>
-        <module>gitbench-storage</module>
         <module>gitbench-web</module>
     </modules>
 
@@ -27,13 +27,13 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <spring-boot.version>4.0.1</spring-boot.version>
+        <spring-boot.version>3.2.1</spring-boot.version>
         <jmh.version>1.37</jmh.version>
         <jgit.version>6.8.0.202311291450-r</jgit.version>
         <javaparser.version>3.25.8</javaparser.version>
         <picocli.version>4.7.5</picocli.version>
         <postgresql.version>42.7.1</postgresql.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.40</lombok.version>
         <slf4j.version>2.0.9</slf4j.version>
         <logback.version>1.4.14</logback.version>
         <junit.version>5.10.1</junit.version>

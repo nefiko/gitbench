@@ -11,10 +11,34 @@
 
     <artifactId>gitbench-core</artifactId>
 
-    <properties>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
+    <dependencies>
+        <dependency>
+            <groupId>io.gitbench</groupId>
+            <artifactId>gitbench-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gitbench</groupId>
+            <artifactId>gitbench-git</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gitbench</groupId>
+            <artifactId>gitbench-storage</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-symbol-solver-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+        </dependency>
+    </dependencies>
 </project>

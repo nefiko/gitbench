@@ -1,8 +1,6 @@
 package model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -11,6 +9,8 @@ import java.util.List;
 @Data
 @Builder
 @EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
 public class MethodSignature implements Serializable {
 
     @Serial
