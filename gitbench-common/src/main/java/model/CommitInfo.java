@@ -30,4 +30,15 @@ public class CommitInfo implements Serializable {
     private List<String> parentHashes;
 
     private List<String> branches;
+
+    public boolean isMergeCommit() {
+        return parentHashes != null && parentHashes.size() > 1;
+    }
+
+    public String getFirstParentHash() {
+        if (parentHashes != null && !parentHashes.isEmpty()) {
+            return parentHashes.getFirst();
+        }
+        return null;
+    }
 }

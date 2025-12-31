@@ -38,6 +38,11 @@ public class MethodSignature implements Serializable {
         return sb.toString();
     }
 
+    public String getShortName() {
+        String simpleClassName = className.substring(className.lastIndexOf('.') + 1);
+        return simpleClassName + "." + methodName + "()";
+    }
+
     @Override
     public String toString() {
         return getUniqueId();
