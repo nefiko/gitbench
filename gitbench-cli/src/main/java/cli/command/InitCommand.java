@@ -1,9 +1,12 @@
 package cli.command;
 
+import git.GitService;
+import model.CommitInfo;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Command(
@@ -25,14 +28,28 @@ public class InitCommand implements Runnable {
     public void run() {
         Path absolutePath = projectPath.toAbsolutePath();
         String name = projectName != null ? projectName : absolutePath.getFileName().toString();
-        
+
         System.out.println("Initializing GitBench for project: " + name);
         System.out.println("Path: " + absolutePath);
-        
-        if (force) {
-            System.out.println("Force reinitializing...");
+
+        if (!Files.exists(absolutePath.resolve(".git"))) {
+            System.err.println("Error: Not a Git repository. Please run 'git init' first.");
+            return;
         }
-        
-        System.out.println("Project initialized successfully.");
+
+        try (GitService gitService = new GitService(absolutePath)) {
+            CommitInfo currentCommit = gitService.getCurrentCommit();
+            String branch = gitService.getCurrentBranch();
+
+            System.out.println();
+            System.out.println("Git repository detected:");
+            System.out.println("  Branch: " + branch);
+            System.out.println("  Current commit: " + currentCommit.getShortHash());
+            System.out.println();
+            System.out.println("Project initialized successfully.");
+            System.out.println("Run 'gitbench scan' to find benchmark candidates.");
+        } catch (Exception e) {
+            System.err.println("Error initializing project: " + e.getMessage());
+        }
     }
 }

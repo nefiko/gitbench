@@ -1,3 +1,4 @@
+import git.GitService;
 import model.CommitInfo;
 import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterEach;

@@ -1,3 +1,5 @@
+import git.GitService;
+import git.GitWorkspaceManager;
 import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

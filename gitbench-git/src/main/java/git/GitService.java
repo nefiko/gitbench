@@ -1,3 +1,5 @@
+package git;
+
 import exception.GitOperationException;
 import lombok.Data;
 import model.CommitInfo;
