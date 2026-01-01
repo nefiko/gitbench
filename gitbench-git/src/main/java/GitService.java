@@ -1,4 +1,5 @@
 import exception.GitOperationException;
+import lombok.Data;
 import model.CommitInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -21,12 +22,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+@Data
 public class GitService implements Closeable {
 
     private final Repository repository;
     private final Git git;
+    private final Path repositoryPath;
 
     public GitService(Path projectPath) {
+        this.repositoryPath = projectPath;
         try {
             FileRepositoryBuilder builder = new FileRepositoryBuilder();
             this.repository = builder
@@ -158,6 +162,34 @@ public class GitService implements Closeable {
         info.setTimestamp(Instant.ofEpochSecond(commit.getCommitTime()));
         info.setParentHashes(parentHashes);
         return info;
+    }
+
+    public String getCurrentBranch() {
+        try {
+            return repository.getBranch();
+        } catch (IOException e) {
+            throw new GitOperationException("Failed to get current branch", e);
+        }
+    }
+
+    public void checkout(String commitRef) {
+        try {
+            git.checkout()
+                    .setName(commitRef)
+                    .call();
+        } catch (GitAPIException e) {
+            throw new GitOperationException("Failed to checkout: " + commitRef, e);
+        }
+    }
+
+    public void checkoutBranch(String branchName) {
+        try {
+            git.checkout()
+                    .setName(branchName)
+                    .call();
+        } catch (GitAPIException e) {
+            throw new GitOperationException("Failed to checkout branch: " + branchName, e);
+        }
     }
 
     @Override
