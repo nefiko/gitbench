@@ -1,14 +1,19 @@
 package cli.command;
 
+import config.ScannerConfiguration;
+import model.HotspotCandidate;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import scanner.impl.StaticCodeScanner;
 
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 @Command(
         name = "scan",
-        description = "Scans project for benchmark candidates"
+        description = "Scan project for benchmark candidates"
 )
 public class ScanCommand implements Runnable {
 
@@ -24,16 +29,40 @@ public class ScanCommand implements Runnable {
     @Option(names = {"--exclude"}, description = "Packages to exclude")
     private String[] excludePackages;
 
+    @Option(names = {"-n", "--limit"}, defaultValue = "20", description = "Maximum methods to show")
+    private int limit;
+
     @Override
     public void run() {
-        System.out.println("Scanning project: " + projectPath.toAbsolutePath());
+        Path absolutePath = projectPath.toAbsolutePath();
+        System.out.println("Scanning project: " + absolutePath);
 
+        ScannerConfiguration config = new ScannerConfiguration();
         if (includePackages != null) {
-            System.out.println("Including packages: " + String.join(", ", includePackages));
+            config.setIncludePackages(Arrays.asList(includePackages));
+        }
+        if (excludePackages != null) {
+            config.setExcludePackages(Arrays.asList(excludePackages));
         }
 
-        if (excludePackages != null) {
-            System.out.println("Excluding packages: " + String.join(", ", excludePackages));
+        config.setMaxMethods(limit);
+
+        StaticCodeScanner scanner = new StaticCodeScanner();
+        List<HotspotCandidate> candidates = scanner.scan(absolutePath, config);
+
+        System.out.println();
+        System.out.println("Found " + candidates.size() + " benchmark candidates:");
+        System.out.println();
+
+        for (HotspotCandidate candidate : candidates) {
+            String signature = candidate.getMethodSignature().getClassName()
+                    + "#" + candidate.getMethodSignature().getMethodName();
+            System.out.println("  " + signature);
+
+            if (verbose) {
+                System.out.println("Priority: " + candidate.getPriorityScore());
+                System.out.println("Reasons: " + candidate.getReasons());
+            }
         }
     }
 }
