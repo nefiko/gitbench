@@ -166,6 +166,26 @@ public class GitService implements Closeable {
         return info;
     }
 
+    public List<CommitInfo> getCommitHistory(String startRef, int maxCount) {
+        try {
+            ObjectId objectId = repository.resolve(startRef);
+            if (objectId == null) {
+                throw new GitOperationException("Cannot resolve commit reference: " + startRef);
+            }
+
+            Iterable<RevCommit> commits = git.log()
+                    .add(objectId)
+                    .setMaxCount(maxCount)
+                    .call();
+
+            return StreamSupport.stream(commits.spliterator(), false)
+                    .map(this::toCommitInfo)
+                    .collect(Collectors.toList());
+        } catch (IOException | GitAPIException e) {
+            throw new GitOperationException("Failed to get commit history from: " + startRef, e);
+        }
+    }
+
     public String getCurrentBranch() {
         try {
             return repository.getBranch();
