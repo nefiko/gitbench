@@ -1,4 +1,4 @@
-package cli.command;
+package cli.command.sub;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -9,7 +9,8 @@ import java.util.concurrent.Callable;
 
 @Command(
         name = "compare",
-        description = "Compare benchmarks between two commits"
+        description = "Compare benchmarks between two commits",
+        mixinStandardHelpOptions = true
 )
 public class CompareCommand implements Callable<Integer> {
 

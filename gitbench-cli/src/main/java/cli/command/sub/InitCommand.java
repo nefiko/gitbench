@@ -1,4 +1,4 @@
-package cli.command;
+package cli.command.sub;
 
 import git.GitService;
 import model.CommitInfo;
@@ -12,7 +12,8 @@ import java.util.concurrent.Callable;
 
 @Command(
         name = "init",
-        description = "Initialize project for GitBench tracking"
+        description = "Initialize project for GitBench tracking",
+        mixinStandardHelpOptions = true
 )
 public class InitCommand implements Callable<Integer> {
 
@@ -44,8 +45,8 @@ public class InitCommand implements Callable<Integer> {
 
             System.out.println();
             System.out.println("Git repository detected:");
-            System.out.println("Branch: " + branch);
-            System.out.println("Current commit: " + currentCommit.getShortHash());
+            System.out.println("  Branch: " + branch);
+            System.out.println("  Current commit: " + currentCommit.getShortHash());
             System.out.println();
             System.out.println("Project initialized successfully.");
             System.out.println("Run 'gitbench scan' to find benchmark candidates.");

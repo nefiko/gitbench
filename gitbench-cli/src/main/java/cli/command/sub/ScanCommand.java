@@ -1,4 +1,4 @@
-package cli.command;
+package cli.command.sub;
 
 import config.ScannerConfiguration;
 import model.HotspotCandidate;
@@ -15,7 +15,8 @@ import java.util.concurrent.Callable;
 
 @Command(
         name = "scan",
-        description = "Scan project for benchmark candidates"
+        description = "Scan project for benchmark candidates",
+        mixinStandardHelpOptions = true
 )
 public class ScanCommand implements Callable<Integer> {
 

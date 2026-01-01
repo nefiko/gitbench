@@ -1,11 +1,10 @@
 package cli.command;
 
-import org.eclipse.jgit.api.Git;
+import cli.command.sub.InitCommand;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;

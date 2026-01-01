@@ -1,4 +1,4 @@
-package cli.command;
+package cli.command.sub;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -9,7 +9,8 @@ import java.util.concurrent.Callable;
 
 @Command(
         name = "run",
-        description = "Run benchmarks on specified commit"
+        description = "Run benchmarks on specified commit",
+        mixinStandardHelpOptions = true
 )
 public class RunCommand implements Callable<Integer> {
 

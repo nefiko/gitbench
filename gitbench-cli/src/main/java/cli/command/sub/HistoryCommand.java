@@ -1,4 +1,4 @@
-package cli.command;
+package cli.command.sub;
 
 import git.GitService;
 import model.CommitInfo;
@@ -12,7 +12,8 @@ import java.util.concurrent.Callable;
 
 @Command(
         name = "history",
-        description = "Show benchmark history and compare commits"
+        description = "Show benchmark history and compare commits",
+        mixinStandardHelpOptions = true
 )
 public class HistoryCommand implements Callable<Integer> {
 

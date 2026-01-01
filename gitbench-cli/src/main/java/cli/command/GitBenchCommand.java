@@ -1,5 +1,6 @@
 package cli.command;
 
+import cli.command.sub.*;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -8,7 +9,9 @@ import java.util.concurrent.Callable;
 @Command(
         name = "gitbench",
         description = "Starts up the GitBench CLI interface",
-        subcommands = {InitCommand.class, ScanCommand.class, RunCommand.class, HistoryCommand.class}
+        subcommands = {InitCommand.class, ScanCommand.class, RunCommand.class,
+                HistoryCommand.class, StatusCommand.class, CompareCommand.class},
+        mixinStandardHelpOptions = true
 )
 public class GitBenchCommand implements Callable<Integer> {
 

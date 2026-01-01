@@ -186,6 +186,14 @@ public class GitService implements Closeable {
         }
     }
 
+    public boolean hasUncommittedChanges() {
+        try {
+            return !git.status().call().isClean();
+        } catch (GitAPIException e) {
+            throw new GitOperationException("Failed to check repository status", e);
+        }
+    }
+
     public String getCurrentBranch() {
         try {
             return repository.getBranch();
