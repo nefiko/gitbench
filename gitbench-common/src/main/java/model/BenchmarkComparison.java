@@ -1,5 +1,6 @@
 package model;
 
+import enums.ChangeType;
 import lombok.Builder;
 import lombok.Data;
 
@@ -30,15 +31,6 @@ public class BenchmarkComparison implements Serializable {
     private double pValue;
 
     private double confidenceLevel;
-
-    public enum ChangeType {
-        SIGNIFICANT_REGRESSION,
-        MINOR_REGRESSION,
-        NO_CHANGE,
-        MINOR_IMPROVEMENT,
-        SIGNIFICANT_IMPROVEMENT,
-        NO_BASELINE
-    }
 
     public static ChangeType calculateChangeType(double percentageChange) {
         if (Double.isNaN(percentageChange)) {

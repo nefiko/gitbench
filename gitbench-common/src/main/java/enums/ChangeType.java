@@ -1,0 +1,10 @@
+package enums;
+
+public enum ChangeType {
+    SIGNIFICANT_REGRESSION,
+    MINOR_REGRESSION,
+    NO_CHANGE,
+    MINOR_IMPROVEMENT,
+    SIGNIFICANT_IMPROVEMENT,
+    NO_BASELINE
+}

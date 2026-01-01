@@ -1,5 +1,6 @@
 package entity;
 
+import enums.ChangeType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -98,14 +99,5 @@ public class BenchmarkResultEntity {
     @PrePersist
     protected void onCreate() {
         createdAt = Instant.now();
-    }
-
-    public enum ChangeType {
-        SIGNIFICANT_REGRESSION,
-        MINOR_REGRESSION,
-        NO_CHANGE,
-        MINOR_IMPROVEMENT,
-        SIGNIFICANT_IMPROVEMENT,
-        NO_BASELINE
     }
 }
