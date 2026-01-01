@@ -214,8 +214,8 @@ class ComparisonCalculatorTest {
 
     @Test
     void statisticalSignificance_detectsWhenIntervalsDoNotOverlap() {
-        BenchmarkResult current = createResultWithConfidenceInterval("Method#test()", 150.0, new double[]{140.0, 160.0});
-        BenchmarkResult baseline = createResultWithConfidenceInterval("Method#test()", 100.0, new double[]{90.0, 110.0});
+        BenchmarkResult current = createResultWithConfidenceInterval(150.0, new double[]{140.0, 160.0});
+        BenchmarkResult baseline = createResultWithConfidenceInterval(100.0, new double[]{90.0, 110.0});
 
         BenchmarkComparison result = calculator.compare(current, baseline);
 
@@ -224,8 +224,8 @@ class ComparisonCalculatorTest {
 
     @Test
     void statisticalSignificance_detectsWhenIntervalsOverlap() {
-        BenchmarkResult current = createResultWithConfidenceInterval("Method#test()", 105.0, new double[]{95.0, 115.0});
-        BenchmarkResult baseline = createResultWithConfidenceInterval("Method#test()", 100.0, new double[]{90.0, 110.0});
+        BenchmarkResult current = createResultWithConfidenceInterval(105.0, new double[]{95.0, 115.0});
+        BenchmarkResult baseline = createResultWithConfidenceInterval(100.0, new double[]{90.0, 110.0});
 
         BenchmarkComparison result = calculator.compare(current, baseline);
 
@@ -250,8 +250,8 @@ class ComparisonCalculatorTest {
         return result;
     }
 
-    private BenchmarkResult createResultWithConfidenceInterval(String signatureId, double averageTime, double[] interval) {
-        BenchmarkResult result = createResult(signatureId, averageTime);
+    private BenchmarkResult createResultWithConfidenceInterval(double averageTime, double[] interval) {
+        BenchmarkResult result = createResult("Method#test()", averageTime);
         result.getExecutionStats().setConfidenceInterval(interval);
         return result;
     }
