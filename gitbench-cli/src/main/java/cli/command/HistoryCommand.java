@@ -8,12 +8,13 @@ import picocli.CommandLine.Option;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 @Command(
         name = "history",
         description = "Show benchmark history and compare commits"
 )
-public class HistoryCommand implements Runnable {
+public class HistoryCommand implements Callable<Integer> {
 
     @Option(names = {"-p", "--project"}, defaultValue = ".", description = "Project path")
     private Path projectPath;
@@ -31,12 +32,12 @@ public class HistoryCommand implements Runnable {
     private String methodFilter;
 
     @Override
-    public void run() {
+    public Integer call() {
         Path absolutePath = projectPath.toAbsolutePath();
 
         if (!Files.exists(absolutePath.resolve(".git"))) {
             System.err.println("Error: Not a Git repository.");
-            return;
+            return 1;
         }
 
         try (GitService gitService = new GitService(absolutePath)) {
@@ -67,8 +68,10 @@ public class HistoryCommand implements Runnable {
 
             System.out.println();
             System.out.println("Benchmark data will be shown when available...");
+            return 0;
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
+            return 1;
         }
     }
 

@@ -1,13 +1,16 @@
 package cli.command;
 
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
-@CommandLine.Command(
+import java.util.concurrent.Callable;
+
+@Command(
         name = "gitbench",
         description = "Starts up the GitBench CLI interface",
         subcommands = {InitCommand.class, ScanCommand.class, RunCommand.class, HistoryCommand.class}
-        )
-public class GitBenchCommand implements Runnable {
+)
+public class GitBenchCommand implements Callable<Integer> {
 
     static void main(String[] args) {
         int exitCode = new CommandLine(new GitBenchCommand()).execute(args);
@@ -15,7 +18,8 @@ public class GitBenchCommand implements Runnable {
     }
 
     @Override
-    public void run() {
-        System.out.println("Starting GitBench CLI interface...");
+    public Integer call() {
+        CommandLine.usage(this, System.out);
+        return 0;
     }
 }

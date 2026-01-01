@@ -5,14 +5,15 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.nio.file.Path;
+import java.util.concurrent.Callable;
 
 @Command(
         name = "run",
         description = "Run benchmarks on specified commit"
 )
-public class RunCommand implements Runnable {
+public class RunCommand implements Callable<Integer> {
 
-    @Parameters(index = "0", defaultValue = "HEAD", description = "Commit reference (hash, branch, tag, HEAD)")
+    @Parameters(index = "0", defaultValue = "HEAD", description = "Commit reference")
     private String commitRef;
 
     @Option(names = {"-p", "--project"}, defaultValue = ".", description = "Project path")
@@ -31,13 +32,7 @@ public class RunCommand implements Runnable {
     private String methodFilter;
 
     @Override
-    public void run() {
-        System.out.println("Running benchmarks on commit: " + commitRef);
-        System.out.println("Project: " + projectPath.toAbsolutePath());
-        System.out.println("Warmup: " + warmupIterations + ", Iterations: " + measurementIterations + ", Forks: " + forks);
-
-        if (methodFilter != null) {
-            System.out.println("Filtering method: " + methodFilter);
-        }
+    public Integer call() {
+        return 0;
     }
 }
