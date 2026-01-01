@@ -13,7 +13,7 @@ import java.util.Set;
 public final class FileUtils {
 
     private static final Set<String> SKIP_DIRS = Set.of(
-            "target", "build", "node_modules", ".git", ".gitbench", "out", ".gradle"
+            "target", "build", "node_modules", ".git", ".gitbench", "out", ".mvn", ".gradle", ".idea"
     );
 
     private FileUtils() {
