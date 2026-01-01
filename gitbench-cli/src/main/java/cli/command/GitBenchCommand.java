@@ -5,7 +5,7 @@ import picocli.CommandLine;
 @CommandLine.Command(
         name = "gitbench",
         description = "Starts up the GitBench CLI interface",
-        subcommands = {ScanCommand.class, RunCommand.class}
+        subcommands = {InitCommand.class, ScanCommand.class, RunCommand.class, HistoryCommand.class}
         )
 public class GitBenchCommand implements Runnable {
 
