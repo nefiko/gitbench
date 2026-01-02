@@ -1,5 +1,7 @@
 package cli.command.sub;
 
+import config.BenchmarkConfiguration;
+import config.ConfigurationLoader;
 import config.ScannerConfiguration;
 import model.HotspotCandidate;
 import picocli.CommandLine.Command;
@@ -34,6 +36,9 @@ public class ScanCommand implements Callable<Integer> {
 
     @Option(names = {"-n", "--limit"}, defaultValue = "20", description = "Maximum methods to show")
     private int limit;
+
+    @Option(names = {"--save"}, description = "Save candidates to .gitbench/benchmarks.yml")
+    private boolean save;
 
     @Override
     public Integer call() {
@@ -73,10 +78,42 @@ public class ScanCommand implements Callable<Integer> {
                     System.out.println("    Reasons: " + candidate.getReasons());
                 }
             }
+
+            if (save && !candidates.isEmpty()) {
+                saveToBenchmarksYml(absolutePath, candidates);
+            } else if (!save && !candidates.isEmpty()) {
+                System.out.println();
+                System.out.println("Run 'gitbench scan --save' to save these candidates to .gitbench/benchmarks.yml");
+            }
+
             return 0;
         } catch (Exception e) {
             System.err.println("Error scanning project: " + e.getMessage());
             return 1;
+        }
+    }
+
+    private void saveToBenchmarksYml(Path projectPath, List<HotspotCandidate> candidates) {
+        try {
+            ConfigurationLoader loader = new ConfigurationLoader();
+            BenchmarkConfiguration config = new BenchmarkConfiguration();
+
+            for (HotspotCandidate candidate : candidates) {
+                BenchmarkConfiguration.BenchmarkMethodConfiguration methodConfig = new BenchmarkConfiguration.BenchmarkMethodConfiguration();
+                methodConfig.setClassName(candidate.getMethodSignature().getClassName());
+                methodConfig.setMethodName(candidate.getMethodSignature().getMethodName());
+                methodConfig.setSetup(""); // Todo
+                methodConfig.setParams(List.of("")); // Todo
+                config.getBenchmarks().add(methodConfig);
+            }
+
+            loader.saveBenchmarkConfig(projectPath, config);
+
+            System.out.println();
+            System.out.println("Saved to .gitbench/benchmarks.yml");
+            System.out.println("Edit the file to provide setup code and parameters for each method.");
+        } catch (Exception e) {
+            System.err.println("Error saving config: " + e.getMessage());
         }
     }
 }
