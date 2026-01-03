@@ -1,0 +1,26 @@
+package generated;
+
+import org.openjdk.jmh.annotations.*;
+import java.util.concurrent.TimeUnit;
+${imports}
+
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Benchmark)
+@Warmup(iterations = ${warmupIterations})
+@Measurement(iterations = ${measurementIterations})
+@Fork(1)
+public class ${benchmarkClassName} {
+
+    private ${className} instance;
+
+    @Setup(Level.Trial)
+    public void setup() {
+        instance = ${setup};
+    }
+
+    @Benchmark
+    public Object benchmark() {
+        return instance.${methodName}(${params});
+    }
+}
