@@ -1,6 +1,6 @@
 package cli.command;
 
-import cli.command.sub.HistoryCommand;
+import cli.command.sub.CompareCommand;
 import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,56 +11,56 @@ import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class HistoryCommandTest {
+class CompareCommandTest {
 
     @TempDir
     Path tempDir;
 
     @Test
-    void history_returnsOne_whenNotGitRepo() {
-        CommandLine cmd = new CommandLine(new HistoryCommand());
+    void compare_returnsOne_whenNotGitRepo() {
+        CommandLine cmd = new CommandLine(new CompareCommand());
 
-        int exitCode = cmd.execute("--project", tempDir.toString());
+        int exitCode = cmd.execute("HEAD~1", "HEAD", "--project", tempDir.toString());
 
         assertThat(exitCode).isEqualTo(1);
     }
 
     @Test
-    void history_returnsZero_whenGitRepo() throws Exception {
+    void compare_returnsZero_whenValidCommits() throws Exception {
         initGitRepoWithCommits();
 
-        CommandLine cmd = new CommandLine(new HistoryCommand());
-        int exitCode = cmd.execute("--project", tempDir.toString());
+        CommandLine cmd = new CommandLine(new CompareCommand());
+        int exitCode = cmd.execute("HEAD~1", "HEAD", "--project", tempDir.toString());
 
         assertThat(exitCode).isEqualTo(0);
     }
 
     @Test
-    void history_acceptsLastOption() throws Exception {
+    void compare_acceptsThresholdOption() throws Exception {
         initGitRepoWithCommits();
 
-        CommandLine cmd = new CommandLine(new HistoryCommand());
-        int exitCode = cmd.execute("--project", tempDir.toString(), "--last", "3");
+        CommandLine cmd = new CommandLine(new CompareCommand());
+        int exitCode = cmd.execute("HEAD~1", "HEAD", "--project", tempDir.toString(), "--threshold", "10");
 
         assertThat(exitCode).isEqualTo(0);
     }
 
     @Test
-    void history_acceptsFromToOptions() throws Exception {
+    void compare_acceptsMethodFilter() throws Exception {
         initGitRepoWithCommits();
 
-        CommandLine cmd = new CommandLine(new HistoryCommand());
-        int exitCode = cmd.execute("--project", tempDir.toString(), "--from", "HEAD~1", "--to", "HEAD");
+        CommandLine cmd = new CommandLine(new CompareCommand());
+        int exitCode = cmd.execute("HEAD~1", "HEAD", "--project", tempDir.toString(), "--method", "process");
 
         assertThat(exitCode).isEqualTo(0);
     }
 
     @Test
-    void history_acceptsMethodFilter() throws Exception {
+    void compare_defaultsTargetToHead() throws Exception {
         initGitRepoWithCommits();
 
-        CommandLine cmd = new CommandLine(new HistoryCommand());
-        int exitCode = cmd.execute("--project", tempDir.toString(), "--method", "someMethod");
+        CommandLine cmd = new CommandLine(new CompareCommand());
+        int exitCode = cmd.execute("HEAD~1", "--project", tempDir.toString());
 
         assertThat(exitCode).isEqualTo(0);
     }

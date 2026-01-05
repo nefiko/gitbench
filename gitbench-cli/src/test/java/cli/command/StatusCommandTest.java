@@ -1,6 +1,6 @@
 package cli.command;
 
-import cli.command.sub.RunCommand;
+import cli.command.sub.StatusCommand;
 import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,14 +11,14 @@ import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class RunCommandTest {
+class StatusCommandTest {
 
     @TempDir
     Path tempDir;
 
     @Test
-    void run_returnsOne_whenNotGitRepo() {
-        CommandLine cmd = new CommandLine(new RunCommand());
+    void status_returnsOne_whenNotGitRepo() {
+        CommandLine cmd = new CommandLine(new StatusCommand());
 
         int exitCode = cmd.execute("--project", tempDir.toString());
 
@@ -26,30 +26,19 @@ class RunCommandTest {
     }
 
     @Test
-    void run_returnsOne_whenNoBenchmarksYml() throws Exception {
+    void status_returnsZero_whenGitRepo() throws Exception {
         initGitRepo();
 
-        CommandLine cmd = new CommandLine(new RunCommand());
+        CommandLine cmd = new CommandLine(new StatusCommand());
         int exitCode = cmd.execute("--project", tempDir.toString());
 
-        assertThat(exitCode).isEqualTo(1);
+        assertThat(exitCode).isEqualTo(0);
     }
 
     @Test
-    void run_acceptsCommitRef() throws Exception {
-        initGitRepo();
+    void status_defaultsToCurrentDirectory() {
+        CommandLine cmd = new CommandLine(new StatusCommand());
 
-        CommandLine cmd = new CommandLine(new RunCommand());
-        int exitCode = cmd.execute("HEAD", "--project", tempDir.toString());
-
-        assertThat(exitCode).isEqualTo(1); // Still fails, no benchmarks.yml
-    }
-
-    @Test
-    void run_defaultsToCurrentDirectory() {
-        CommandLine cmd = new CommandLine(new RunCommand());
-
-        // Should not throw - just returns error because not git repo
         int exitCode = cmd.execute();
 
         assertThat(exitCode).isEqualTo(1);
