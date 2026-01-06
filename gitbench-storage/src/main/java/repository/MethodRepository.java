@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface MethodRepository extends JpaRepository<MethodEntity, Long> {
     Optional<MethodEntity> findByProjectAndSignatureId(ProjectEntity project, String uniqueId);
+
+    Optional<MethodEntity> findByProjectAndClassNameAndMethodName(ProjectEntity project, String className, String methodName);
 }
