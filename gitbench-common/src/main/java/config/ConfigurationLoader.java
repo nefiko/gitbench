@@ -28,7 +28,7 @@ public class ConfigurationLoader {
         return yamlMapper.readValue(configFile.toFile(), BenchmarkConfiguration.class);
     }
 
-    public void saveBenchmarkConfig(Path projectPath, BenchmarkConfiguration config) throws IOException {
+    public void saveBenchmarkConfiguration(Path projectPath, BenchmarkConfiguration config) throws IOException {
         Path configDir = projectPath.resolve(CONFIG_DIR);
         Files.createDirectories(configDir);
 

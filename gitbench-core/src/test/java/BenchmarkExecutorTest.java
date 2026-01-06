@@ -83,7 +83,7 @@ class BenchmarkExecutorTest {
     private void createEmptyConfig() throws Exception {
         ConfigurationLoader loader = new ConfigurationLoader();
         BenchmarkConfiguration config = new BenchmarkConfiguration();
-        loader.saveBenchmarkConfig(tempDir, config);
+        loader.saveBenchmarkConfiguration(tempDir, config);
     }
 
     private void createConfigWithMethod() throws Exception {
@@ -97,7 +97,7 @@ class BenchmarkExecutorTest {
         method.setParams(List.of());
 
         config.getBenchmarks().add(method);
-        loader.saveBenchmarkConfig(tempDir, config);
+        loader.saveBenchmarkConfiguration(tempDir, config);
     }
 
     private CommitInfo createCommit() {

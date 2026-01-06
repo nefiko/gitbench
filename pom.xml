@@ -19,6 +19,7 @@
         <module>gitbench-core</module>
         <module>gitbench-cli</module>
         <module>gitbench-web</module>
+        <module>test-app</module>
     </modules>
 
     <properties>

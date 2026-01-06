@@ -1,0 +1,65 @@
+---
+benchmarks:
+- className: "service.Calculator"
+  methodName: "factorial"
+  setup: ""
+  params:
+  - ""
+  warmupIterations: 3
+  measurementIterations: 5
+- className: "service.Calculator"
+  methodName: "sumArray"
+  setup: ""
+  params:
+  - ""
+  warmupIterations: 3
+  measurementIterations: 5
+- className: "service.Calculator"
+  methodName: "isPrime"
+  setup: ""
+  params:
+  - ""
+  warmupIterations: 3
+  measurementIterations: 5
+- className: "service.Calculator"
+  methodName: "countPrimes"
+  setup: ""
+  params:
+  - ""
+  warmupIterations: 3
+  measurementIterations: 5
+- className: "service.UserService"
+  methodName: "findById"
+  setup: ""
+  params:
+  - ""
+  warmupIterations: 3
+  measurementIterations: 5
+- className: "service.UserService"
+  methodName: "countActiveUsers"
+  setup: ""
+  params:
+  - ""
+  warmupIterations: 3
+  measurementIterations: 5
+- className: "service.Calculator"
+  methodName: "fibonacci"
+  setup: ""
+  params:
+  - ""
+  warmupIterations: 3
+  measurementIterations: 5
+- className: "service.UserService"
+  methodName: "findAll"
+  setup: ""
+  params:
+  - ""
+  warmupIterations: 3
+  measurementIterations: 5
+- className: "service.UserService"
+  methodName: "save"
+  setup: ""
+  params:
+  - ""
+  warmupIterations: 3
+  measurementIterations: 5

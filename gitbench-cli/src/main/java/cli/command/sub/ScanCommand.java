@@ -107,7 +107,7 @@ public class ScanCommand implements Callable<Integer> {
                 config.getBenchmarks().add(methodConfig);
             }
 
-            loader.saveBenchmarkConfig(projectPath, config);
+            loader.saveBenchmarkConfiguration(projectPath, config);
 
             System.out.println();
             System.out.println("Saved to .gitbench/benchmarks.yml");
