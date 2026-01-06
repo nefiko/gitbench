@@ -1,14 +1,19 @@
 package cli.command.sub;
 
 import git.GitService;
+import model.BenchmarkResult;
 import model.CommitInfo;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import service.BenchmarkStorageService;
+import service.StorageServiceFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 @Command(
         name = "history",
@@ -46,10 +51,10 @@ public class HistoryCommand implements Callable<Integer> {
 
             if (fromCommit != null) {
                 commits = gitService.getCommitsBetween(fromCommit, toCommit);
-                System.out.println("Comparing " + fromCommit + " to " + toCommit);
+                System.out.println("Commits from " + fromCommit + " to " + toCommit);
             } else {
                 commits = gitService.getCommitHistory("HEAD", lastN);
-                System.out.println("Showing last " + lastN + " commits");
+                System.out.println("Last " + lastN + " commits");
             }
 
             if (methodFilter != null) {
@@ -57,18 +62,43 @@ public class HistoryCommand implements Callable<Integer> {
             }
 
             System.out.println();
-            System.out.println("Commit      Author          Message");
-            System.out.println("----------- --------------- --------------------------------");
 
+            String projectName = absolutePath.getFileName().toString();
+            BenchmarkStorageService storage = StorageServiceFactory.createDefault();
+            List<BenchmarkResult> allResults = storage.getHistory(projectName, 100);
+
+            Map<String, List<BenchmarkResult>> resultsByCommit = allResults.stream()
+                    .filter(r -> r.getCommitInfo() != null)
+                    .filter(r -> methodFilter == null || matchesFilter(r, methodFilter))
+                    .collect(Collectors.groupingBy(r -> r.getCommitInfo().getHash()));
+
+            System.out.println("Commit      Author          Avg Time    Change");
+            System.out.println("----------- --------------- ----------- ----------------");
+
+            CommitInfo previousCommit = null;
             for (CommitInfo commit : commits) {
                 String shortHash = commit.getShortHash();
                 String author = truncate(commit.getAuthorName(), 15);
-                String message = truncate(commit.getMessage().split("\n")[0], 32);
-                System.out.printf("%-11s %-15s %s%n", shortHash, author, message);
+
+                List<BenchmarkResult> commitResults = resultsByCommit.get(commit.getHash());
+
+                if (commitResults != null && !commitResults.isEmpty()) {
+                    double avgTime = commitResults.stream()
+                            .filter(BenchmarkResult::isSuccessful)
+                            .filter(r -> r.getExecutionStats() != null)
+                            .mapToDouble(r -> r.getExecutionStats().getAverageTime())
+                            .average()
+                            .orElse(0.0);
+
+                    String change = calculateChange(commit, previousCommit, resultsByCommit);
+                    System.out.printf("%-11s %-15s %-11.2f %s%n", shortHash, author, avgTime, change);
+                } else {
+                    System.out.printf("%-11s %-15s %-11s %s%n", shortHash, author, "-", "(no data)");
+                }
+
+                previousCommit = commit;
             }
 
-            System.out.println();
-            System.out.println("Benchmark data will be shown when available...");
             return 0;
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
@@ -76,7 +106,59 @@ public class HistoryCommand implements Callable<Integer> {
         }
     }
 
+    private boolean matchesFilter(BenchmarkResult result, String filter) {
+        if (result.getMethodSignature() == null) {
+            return false;
+        }
+        String fullName = result.getMethodSignature().getClassName() + "#" + result.getMethodSignature().getMethodName();
+        return fullName.toLowerCase().contains(filter.toLowerCase());
+    }
+
+    private String calculateChange(CommitInfo current, CommitInfo previous, Map<String, List<BenchmarkResult>> resultsByCommit) {
+        if (previous == null) {
+            return "-";
+        }
+
+        List<BenchmarkResult> currentResults = resultsByCommit.get(current.getHash());
+        List<BenchmarkResult> previousResults = resultsByCommit.get(previous.getHash());
+
+        if (currentResults == null || previousResults == null) {
+            return "-";
+        }
+
+        double currentAvg = currentResults.stream()
+                .filter(BenchmarkResult::isSuccessful)
+                .filter(r -> r.getExecutionStats() != null)
+                .mapToDouble(r -> r.getExecutionStats().getAverageTime())
+                .average()
+                .orElse(0.0);
+
+        double previousAvg = previousResults.stream()
+                .filter(BenchmarkResult::isSuccessful)
+                .filter(r -> r.getExecutionStats() != null)
+                .mapToDouble(r -> r.getExecutionStats().getAverageTime())
+                .average()
+                .orElse(0.0);
+
+        if (previousAvg == 0) {
+            return "-";
+        }
+
+        double changePercent = ((currentAvg - previousAvg) / previousAvg) * 100;
+
+        if (changePercent > 5) {
+            return String.format("+%.1f%% (regression)", changePercent);
+        } else if (changePercent < -5) {
+            return String.format("%.1f%% (improvement)", changePercent);
+        } else {
+            return String.format("%.1f%%", changePercent);
+        }
+    }
+
     private String truncate(String text, int maxLength) {
+        if (text == null) {
+            return "";
+        }
         if (text.length() <= maxLength) {
             return text;
         }
