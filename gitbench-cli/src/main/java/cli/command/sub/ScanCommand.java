@@ -99,11 +99,17 @@ public class ScanCommand implements Callable<Integer> {
             BenchmarkConfiguration config = new BenchmarkConfiguration();
 
             for (HotspotCandidate candidate : candidates) {
-                BenchmarkConfiguration.BenchmarkMethodConfiguration methodConfig = new BenchmarkConfiguration.BenchmarkMethodConfiguration();
-                methodConfig.setClassName(candidate.getMethodSignature().getClassName());
-                methodConfig.setMethodName(candidate.getMethodSignature().getMethodName());
-                methodConfig.setSetup(""); // Todo
-                methodConfig.setParams(List.of("")); // Todo
+                BenchmarkConfiguration.BenchmarkMethodConfiguration methodConfig =
+                        new BenchmarkConfiguration.BenchmarkMethodConfiguration();
+
+                String className = candidate.getMethodSignature().getClassName();
+                String methodName = candidate.getMethodSignature().getMethodName();
+                List<String> paramTypes = candidate.getMethodSignature().getParameterTypes();
+
+                methodConfig.setClassName(className);
+                methodConfig.setMethodName(methodName);
+                methodConfig.setSetup("new " + className + "()");
+                methodConfig.setParams(generateDefaultParams(paramTypes));
                 config.getBenchmarks().add(methodConfig);
             }
 
@@ -111,9 +117,46 @@ public class ScanCommand implements Callable<Integer> {
 
             System.out.println();
             System.out.println("Saved to .gitbench/benchmarks.yml");
-            System.out.println("Edit the file to provide setup code and parameters for each method.");
+            System.out.println("Review and edit the file to adjust setup code and parameters.");
         } catch (Exception e) {
             System.err.println("Error saving config: " + e.getMessage());
         }
+    }
+
+    private List<String> generateDefaultParams(List<String> paramTypes) {
+        if (paramTypes == null || paramTypes.isEmpty()) {
+            return List.of();
+        }
+
+        return paramTypes.stream()
+                .map(this::getDefaultValue)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private String getDefaultValue(String type) {
+        if (type == null) return "null";
+
+        return switch (type) {
+            case "int", "Integer" -> "10";
+            case "long", "Long" -> "10L";
+            case "double", "Double" -> "10.0";
+            case "float", "Float" -> "10.0f";
+            case "boolean", "Boolean" -> "true";
+            case "String" -> "\"test\"";
+            case "int[]" -> "new int[]{1, 2, 3, 4, 5}";
+            case "long[]" -> "new long[]{1L, 2L, 3L, 4L, 5L}";
+            case "String[]" -> "new String[]{\"a\", \"b\", \"c\"}";
+            default -> {
+                if (type.endsWith("[]")) {
+                    yield "new " + type + "{}";
+                } else if (type.startsWith("List<")) {
+                    yield "java.util.List.of()";
+                } else if (type.startsWith("Map<")) {
+                    yield "java.util.Map.of()";
+                } else {
+                    yield "null /* TODO: " + type + " */";
+                }
+            }
+        };
     }
 }

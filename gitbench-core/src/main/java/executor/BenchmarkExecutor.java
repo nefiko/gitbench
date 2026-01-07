@@ -9,6 +9,8 @@ import model.BenchmarkResult;
 import model.CommitInfo;
 import runner.JmhRunner;
 
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +37,9 @@ public class BenchmarkExecutor {
 
         Files.createDirectories(workDir);
 
+        System.out.println("Compiling project sources...");
+        compileProjectSources();
+
         System.out.println("Generating benchmark code...");
         BenchmarkGenerator generator = new BenchmarkGenerator();
         List<GeneratedBenchmark> generated = generator.generate(config);
@@ -51,6 +56,48 @@ public class BenchmarkExecutor {
 
         JmhRunner runner = new JmhRunner();
         return runner.run(benchmarkClasses, commit);
+    }
+
+    private void compileProjectSources() throws IOException {
+        Path sourceDir = projectPath.resolve("src/main/java");
+        Path targetDir = projectPath.resolve("target/classes");
+
+        if (!Files.exists(sourceDir)) {
+            System.out.println("  No src/main/java found, skipping project compilation.");
+            return;
+        }
+
+        Files.createDirectories(targetDir);
+
+        List<Path> javaFiles = Files.walk(sourceDir)
+                .filter(p -> p.toString().endsWith(".java"))
+                .toList();
+
+        if (javaFiles.isEmpty()) {
+            System.out.println("  No Java files found.");
+            return;
+        }
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        if (compiler == null) {
+            throw new RuntimeException("No Java compiler available");
+        }
+
+        String[] args = new String[javaFiles.size() + 4];
+        args[0] = "-d";
+        args[1] = targetDir.toString();
+        args[2] = "-sourcepath";
+        args[3] = sourceDir.toString();
+        for (int i = 0; i < javaFiles.size(); i++) {
+            args[i + 4] = javaFiles.get(i).toString();
+        }
+
+        int result = compiler.run(null, null, null, args);
+        if (result != 0) {
+            throw new RuntimeException("Failed to compile project sources.");
+        }
+
+        System.out.println("  Compiled " + javaFiles.size() + " source files.");
     }
 
     private String buildClasspath() {
