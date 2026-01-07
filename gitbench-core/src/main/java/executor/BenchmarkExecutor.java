@@ -69,9 +69,12 @@ public class BenchmarkExecutor {
 
         Files.createDirectories(targetDir);
 
-        List<Path> javaFiles = Files.walk(sourceDir)
-                .filter(p -> p.toString().endsWith(".java"))
-                .toList();
+        List<Path> javaFiles;
+        try (var stream = Files.walk(sourceDir)) {
+            javaFiles = stream
+                    .filter(p -> p.toString().endsWith(".java"))
+                    .toList();
+        }
 
         if (javaFiles.isEmpty()) {
             System.out.println("  No Java files found.");
@@ -80,7 +83,7 @@ public class BenchmarkExecutor {
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
-            throw new RuntimeException("No Java compiler available");
+            throw new RuntimeException("No Java compiler available. Run with JDK, not JRE.");
         }
 
         String[] args = new String[javaFiles.size() + 4];
