@@ -11,11 +11,14 @@ import runner.JmhRunner;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BenchmarkExecutor {
 
@@ -44,6 +47,16 @@ public class BenchmarkExecutor {
         BenchmarkGenerator generator = new BenchmarkGenerator();
         List<GeneratedBenchmark> generated = generator.generate(config);
 
+        if (!generated.isEmpty()) {
+            System.out.println("\n  Generated benchmark sample:");
+            System.out.println("  ---");
+            String code = generated.getFirst().sourceCode();
+            for (String line : code.split("\n")) {
+                System.out.println("  " + line);
+            }
+            System.out.println("  ---\n");
+        }
+
         System.out.println("Compiling benchmarks...");
         BenchmarkCompiler compiler = new BenchmarkCompiler(workDir);
         String classpath = buildClasspath();
@@ -54,7 +67,7 @@ public class BenchmarkExecutor {
                 .map(GeneratedBenchmark::className)
                 .collect(Collectors.toList());
 
-        JmhRunner runner = new JmhRunner();
+        JmhRunner runner = new JmhRunner(compiler.getClassDir(), classpath);
         return runner.run(benchmarkClasses, commit);
     }
 
@@ -104,28 +117,28 @@ public class BenchmarkExecutor {
     }
 
     private String buildClasspath() {
-        String separator = System.getProperty("path.separator");
-        StringBuilder cp = new StringBuilder();
+        String separator = File.pathSeparator;
 
-        cp.append(projectPath.resolve("target/classes"));
-        cp.append(separator);
-        cp.append(workDir.resolve("classes"));
-        cp.append(separator);
-        cp.append(System.getProperty("java.class.path"));
-
-        return cp.toString();
+        return projectPath.resolve("target/classes") +
+                separator +
+                workDir.resolve("classes") +
+                separator +
+                System.getProperty("java.class.path");
     }
 
     public void cleanup() throws IOException {
         if (Files.exists(workDir)) {
-            Files.walk(workDir)
-                    .sorted((a, b) -> -a.compareTo(b))
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                        }
-                    });
+            try (Stream<Path> paths = Files.walk(workDir)) {
+                paths
+                        .sorted(Comparator.reverseOrder())
+                        .forEach(path -> {
+                            try {
+                                Files.delete(path);
+                            } catch (IOException _) {
+                            }
+                        });
+            }
         }
     }
+
 }

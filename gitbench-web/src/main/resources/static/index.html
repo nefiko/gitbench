@@ -1,13 +1,98 @@
 <!DOCTYPE html>
-<html>
-<head>...</head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitBench</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
 <body>
-<header class="header"><h1>GitBench</h1></header>
+<header class="header">
+    <h1>GitBench</h1>
+</header>
+
 <div class="container">
     <div class="card">
-        <h2>GitBench</h2>
-        <p>Git-integrated Java benchmarking tool</p>
+        <input type="text" id="projectName" placeholder="Project name" value="test-app">
+        <button class="btn" onclick="loadProject()">Load</button>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat__value" id="totalBenchmarks">-</div>
+            <div class="stat__label">Total</div>
+        </div>
+        <div class="stat stat--success">
+            <div class="stat__value" id="successCount">-</div>
+            <div class="stat__label">Success</div>
+        </div>
+        <div class="stat stat--danger">
+            <div class="stat__value" id="failedCount">-</div>
+            <div class="stat__label">Failed</div>
+        </div>
+        <div class="stat">
+            <div class="stat__value" id="lastRun">-</div>
+            <div class="stat__label">Last Run</div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card">
+        <h2>Recent Results</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Method</th>
+                <th>Commit</th>
+                <th>Time (ms)</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody id="resultsBody">
+            <tr><td colspan="4">No data loaded</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
+
+<script>
+    async function loadProject() {
+        const project = document.getElementById('projectName').value;
+
+        try {
+            const res = await fetch(`/api/projects/${project}/summary`);
+            const data = await res.json();
+
+            document.getElementById('totalBenchmarks').textContent = data.totalBenchmarks || 0;
+            document.getElementById('successCount').textContent = data.successfulRuns || 0;
+            document.getElementById('failedCount').textContent = data.failedRuns || 0;
+            document.getElementById('lastRun').textContent = data.lastRunTimestamp
+                ? new Date(data.lastRunTimestamp).toLocaleDateString()
+                : '-';
+
+            const historyRes = await fetch(`/api/benchmarks/history/${project}?limit=10`);
+            const history = await historyRes.json();
+            updateTable(history);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function updateTable(results) {
+        const tbody = document.getElementById('resultsBody');
+        if (!results.length) {
+            tbody.innerHTML = '<tr><td colspan="4">No data</td></tr>';
+            return;
+        }
+        tbody.innerHTML = results.map(r => `
+                <tr>
+                    <td>${(r.className || '').split('.').pop()}#${r.methodName || ''}</td>
+                    <td>${(r.commitHash || '').substring(0, 7)}</td>
+                    <td>${r.averageTime ? r.averageTime.toFixed(2) : '-'}</td>
+                    <td><span class="badge badge--${r.successful ? 'success' : 'danger'}">${r.successful ? 'OK' : 'Fail'}</span></td>
+                </tr>
+            `).join('');
+    }
+</script>
 </body>
 </html>
