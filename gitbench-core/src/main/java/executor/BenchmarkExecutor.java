@@ -47,16 +47,6 @@ public class BenchmarkExecutor {
         BenchmarkGenerator generator = new BenchmarkGenerator();
         List<GeneratedBenchmark> generated = generator.generate(config);
 
-        if (!generated.isEmpty()) {
-            System.out.println("\n  Generated benchmark sample:");
-            System.out.println("  ---");
-            String code = generated.getFirst().sourceCode();
-            for (String line : code.split("\n")) {
-                System.out.println("  " + line);
-            }
-            System.out.println("  ---\n");
-        }
-
         System.out.println("Compiling benchmarks...");
         BenchmarkCompiler compiler = new BenchmarkCompiler(workDir);
         String classpath = buildClasspath();

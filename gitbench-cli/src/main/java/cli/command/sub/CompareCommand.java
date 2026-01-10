@@ -1,12 +1,12 @@
 package cli.command.sub;
+
 import git.GitService;
 import model.BenchmarkResult;
 import model.CommitInfo;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import service.BenchmarkStorageService;
-import service.StorageServiceFactory;
+import service.impl.FileBenchmarkStorageService;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +42,7 @@ public class CompareCommand implements Callable<Integer> {
         Path absolutePath = projectPath.toAbsolutePath();
 
         if (!Files.exists(absolutePath.resolve(".git"))) {
-            System.err.println("Error: Not a Git repository");
+            System.err.println("Error: Not a Git repository.");
             return 1;
         }
 
@@ -63,14 +63,14 @@ public class CompareCommand implements Callable<Integer> {
             System.out.println();
 
             String projectName = absolutePath.getFileName().toString();
-            BenchmarkStorageService storage = StorageServiceFactory.createDefault();
+            FileBenchmarkStorageService storage = new FileBenchmarkStorageService(absolutePath);
 
-            List<BenchmarkResult> baseResults = storage.getResultsForCommit(base.getHash(), projectName);
-            List<BenchmarkResult> targetResults = storage.getResultsForCommit(target.getHash(), projectName);
+            List<BenchmarkResult> baseResults = storage.getResultsForCommit(base.getShortHash(), projectName);
+            List<BenchmarkResult> targetResults = storage.getResultsForCommit(target.getShortHash(), projectName);
 
             if (baseResults.isEmpty() && targetResults.isEmpty()) {
                 System.out.println("No benchmark data found for either commit.");
-                System.out.println("Run 'gitbench run --persist' on both commits first.");
+                System.out.println("Run 'gitbench run' on both commits first.");
                 return 0;
             }
 
@@ -110,12 +110,12 @@ public class CompareCommand implements Callable<Integer> {
                 double targetTime = targetResult.getExecutionStats().getAverageTime();
 
                 if (baseResult == null || !baseResult.isSuccessful()) {
-                    System.out.printf("%-31s %-11s %-11.2f %s%n", displayName, "-", targetTime, "(new)");
+                    System.out.printf("%-31s %-11s %-11.3f %s%n", displayName, "-", targetTime, "(new)");
                     continue;
                 }
 
                 double baseTime = baseResult.getExecutionStats().getAverageTime();
-                double changePercent = ((targetTime - baseTime) / baseTime) * 100;
+                double changePercent = baseTime == 0 ? 0 : ((targetTime - baseTime) / baseTime) * 100;
 
                 String changeStr;
                 if (changePercent > threshold) {
@@ -128,7 +128,7 @@ public class CompareCommand implements Callable<Integer> {
                     changeStr = String.format("%.1f%%", changePercent);
                 }
 
-                System.out.printf("%-31s %-11.2f %-11.2f %s%n", displayName, baseTime, targetTime, changeStr);
+                System.out.printf("%-31s %-11.3f %-11.3f %s%n", displayName, baseTime, targetTime, changeStr);
             }
 
             System.out.println();
@@ -137,6 +137,7 @@ public class CompareCommand implements Callable<Integer> {
             return regressions > 0 ? 1 : 0;
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
             return 1;
         }
     }

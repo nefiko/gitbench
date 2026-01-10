@@ -19,4 +19,5 @@ public interface BenchmarkStorageService {
     List<BenchmarkResult> getHistory(String projectName, int limit);
 
     Optional<BenchmarkResult> getBaseline(MethodSignature method, String parentCommitHash, String projectName);
+
 }

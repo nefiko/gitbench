@@ -5,8 +5,7 @@ import model.BenchmarkResult;
 import model.CommitInfo;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-import service.BenchmarkStorageService;
-import service.StorageServiceFactory;
+import service.impl.FileBenchmarkStorageService;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,13 +63,13 @@ public class HistoryCommand implements Callable<Integer> {
             System.out.println();
 
             String projectName = absolutePath.getFileName().toString();
-            BenchmarkStorageService storage = StorageServiceFactory.createDefault();
-            List<BenchmarkResult> allResults = storage.getHistory(projectName, 100);
+            FileBenchmarkStorageService storage = new FileBenchmarkStorageService(absolutePath);
+            List<BenchmarkResult> allResults = storage.getHistory(projectName, 1000);
 
             Map<String, List<BenchmarkResult>> resultsByCommit = allResults.stream()
                     .filter(r -> r.getCommitInfo() != null)
                     .filter(r -> methodFilter == null || matchesFilter(r, methodFilter))
-                    .collect(Collectors.groupingBy(r -> r.getCommitInfo().getHash()));
+                    .collect(Collectors.groupingBy(r -> r.getCommitInfo().getShortHash()));
 
             System.out.println("Commit      Author          Avg Time    Change");
             System.out.println("----------- --------------- ----------- ----------------");
@@ -80,7 +79,7 @@ public class HistoryCommand implements Callable<Integer> {
                 String shortHash = commit.getShortHash();
                 String author = truncate(commit.getAuthorName(), 15);
 
-                List<BenchmarkResult> commitResults = resultsByCommit.get(commit.getHash());
+                List<BenchmarkResult> commitResults = resultsByCommit.get(shortHash);
 
                 if (commitResults != null && !commitResults.isEmpty()) {
                     double avgTime = commitResults.stream()
@@ -91,7 +90,7 @@ public class HistoryCommand implements Callable<Integer> {
                             .orElse(0.0);
 
                     String change = calculateChange(commit, previousCommit, resultsByCommit);
-                    System.out.printf("%-11s %-15s %-11.2f %s%n", shortHash, author, avgTime, change);
+                    System.out.printf("%-11s %-15s %-11.3f %s%n", shortHash, author, avgTime, change);
                 } else {
                     System.out.printf("%-11s %-15s %-11s %s%n", shortHash, author, "-", "(no data)");
                 }
@@ -102,6 +101,7 @@ public class HistoryCommand implements Callable<Integer> {
             return 0;
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
             return 1;
         }
     }
@@ -119,8 +119,8 @@ public class HistoryCommand implements Callable<Integer> {
             return "-";
         }
 
-        List<BenchmarkResult> currentResults = resultsByCommit.get(current.getHash());
-        List<BenchmarkResult> previousResults = resultsByCommit.get(previous.getHash());
+        List<BenchmarkResult> currentResults = resultsByCommit.get(current.getShortHash());
+        List<BenchmarkResult> previousResults = resultsByCommit.get(previous.getShortHash());
 
         if (currentResults == null || previousResults == null) {
             return "-";

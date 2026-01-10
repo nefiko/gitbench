@@ -7,6 +7,7 @@ import model.CommitInfo;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import service.impl.FileBenchmarkStorageService;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,6 +56,12 @@ public class RunCommand implements Callable<Integer> {
             System.out.println("Results:");
             System.out.println("--------");
             printResults(results);
+
+            String projectName = absolutePath.getFileName().toString();
+            FileBenchmarkStorageService storage = new FileBenchmarkStorageService(absolutePath);
+            storage.saveResults(results, projectName);
+            System.out.println();
+            System.out.println("Results saved to .gitbench/results.json");
 
             executor.cleanup();
 
