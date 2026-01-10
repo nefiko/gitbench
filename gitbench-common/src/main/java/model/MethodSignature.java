@@ -1,5 +1,6 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import java.io.Serial;
@@ -11,6 +12,7 @@ import java.util.List;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MethodSignature implements Serializable {
 
     @Serial
@@ -27,6 +29,8 @@ public class MethodSignature implements Serializable {
     private String sourceFilePath;
 
     private int lineNumber;
+
+    private String shortName;
 
     public String getUniqueId() {
         StringBuilder sb = new StringBuilder();
