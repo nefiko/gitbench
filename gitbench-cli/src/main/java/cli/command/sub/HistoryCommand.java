@@ -74,6 +74,8 @@ public class HistoryCommand implements Callable<Integer> {
             System.out.println("Commit      Author          Avg Time    Change");
             System.out.println("----------- --------------- ----------- ----------------");
 
+            java.util.Collections.reverse(commits);
+
             CommitInfo previousCommit = null;
             for (CommitInfo commit : commits) {
                 String shortHash = commit.getShortHash();
