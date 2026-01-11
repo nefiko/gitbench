@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitBench</title>
+    <title>GitBench Dashboard</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
 <header class="header">
-    <h1>GitBench</h1>
+    <h1>GitBench Dashboard</h1>
 </header>
 
 <div class="container">
     <div class="card">
-        <input type="text" id="projectName" placeholder="Project name" value="test-app">
+        <label for="projectPath">Project Path:</label>
+        <input type="text" id="projectPath" placeholder="C:\path\to\your\project" style="width: 400px;">
         <button class="btn" onclick="loadProject()">Load</button>
     </div>
 
     <div class="stats">
         <div class="stat">
             <div class="stat__value" id="totalBenchmarks">-</div>
-            <div class="stat__label">Total</div>
+            <div class="stat__label">Total Runs</div>
         </div>
         <div class="stat stat--success">
             <div class="stat__value" id="successCount">-</div>
@@ -36,20 +37,20 @@
         </div>
     </div>
 
-    <!-- Results Table -->
     <div class="card">
-        <h2>Recent Results</h2>
+        <h2>Benchmark Results</h2>
         <table class="table">
             <thead>
             <tr>
                 <th>Method</th>
                 <th>Commit</th>
                 <th>Time (ms)</th>
+                <th>Std Dev</th>
                 <th>Status</th>
             </tr>
             </thead>
             <tbody id="resultsBody">
-            <tr><td colspan="4">No data loaded</td></tr>
+            <tr><td colspan="5">Enter project path and click Load</td></tr>
             </tbody>
         </table>
     </div>
@@ -57,38 +58,44 @@
 
 <script>
     async function loadProject() {
-        const project = document.getElementById('projectName').value;
+        const projectPath = document.getElementById('projectPath').value;
+        if (!projectPath) {
+            alert('Please enter a project path');
+            return;
+        }
 
         try {
-            const res = await fetch(`/api/projects/${project}/summary`);
-            const data = await res.json();
+            const summaryRes = await fetch(`/api/projects/summary?projectPath=${encodeURIComponent(projectPath)}`);
+            const summary = await summaryRes.json();
 
-            document.getElementById('totalBenchmarks').textContent = data.totalBenchmarks || 0;
-            document.getElementById('successCount').textContent = data.successfulRuns || 0;
-            document.getElementById('failedCount').textContent = data.failedRuns || 0;
-            document.getElementById('lastRun').textContent = data.lastRunTimestamp
-                ? new Date(data.lastRunTimestamp).toLocaleDateString()
+            document.getElementById('totalBenchmarks').textContent = summary.totalBenchmarks || 0;
+            document.getElementById('successCount').textContent = summary.successfulRuns || 0;
+            document.getElementById('failedCount').textContent = summary.failedRuns || 0;
+            document.getElementById('lastRun').textContent = summary.lastRunTimestamp
+                ? new Date(summary.lastRunTimestamp).toLocaleDateString()
                 : '-';
 
-            const historyRes = await fetch(`/api/benchmarks/history/${project}?limit=10`);
+            const historyRes = await fetch(`/api/benchmarks/history?projectPath=${encodeURIComponent(projectPath)}&limit=50`);
             const history = await historyRes.json();
             updateTable(history);
         } catch (e) {
             console.error(e);
+            alert('Error loading project: ' + e.message);
         }
     }
 
     function updateTable(results) {
         const tbody = document.getElementById('resultsBody');
-        if (!results.length) {
-            tbody.innerHTML = '<tr><td colspan="4">No data</td></tr>';
+        if (!results || !results.length) {
+            tbody.innerHTML = '<tr><td colspan="5">No benchmark data found</td></tr>';
             return;
         }
         tbody.innerHTML = results.map(r => `
                 <tr>
-                    <td>${(r.className || '').split('.').pop()}#${r.methodName || ''}</td>
+                    <td>${r.className ? r.className.split('.').pop() : ''}#${r.methodName || ''}</td>
                     <td>${(r.commitHash || '').substring(0, 7)}</td>
-                    <td>${r.averageTime ? r.averageTime.toFixed(2) : '-'}</td>
+                    <td>${r.averageTime != null ? r.averageTime.toFixed(3) : '-'}</td>
+                    <td>${r.standardDeviation != null ? r.standardDeviation.toFixed(3) : '-'}</td>
                     <td><span class="badge badge--${r.successful ? 'success' : 'danger'}">${r.successful ? 'OK' : 'Fail'}</span></td>
                 </tr>
             `).join('');

@@ -2,29 +2,66 @@ package web.controller;
 
 import model.BenchmarkResult;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import service.BenchmarkStorageService;
-import service.StorageServiceFactory;
+import org.springframework.web.bind.annotation.*;
+import service.impl.FileBenchmarkStorageService;
+import web.dto.BenchmarkResultDto;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/benchmark")
+@RequestMapping("/api/benchmarks")
+@CrossOrigin(origins = "*")
 public class BenchmarkController {
 
-    private final BenchmarkStorageService benchmarkStorageService;
+    @GetMapping("/history")
+    public ResponseEntity<List<BenchmarkResultDto>> getHistory(
+            @RequestParam(name = "projectPath") String projectPath,
+            @RequestParam(name = "limit", defaultValue = "50") int limit) {
+        Path path = Paths.get(projectPath);
+        FileBenchmarkStorageService storageService = new FileBenchmarkStorageService(path);
+        String projectName = path.getFileName().toString();
 
-    public BenchmarkController() {
-        this.benchmarkStorageService = StorageServiceFactory.createDefault();
+        List<BenchmarkResult> results = storageService.getHistory(projectName, limit);
+        List<BenchmarkResultDto> dtos = results.stream()
+                .map(BenchmarkResultDto::fromModel)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
-    @GetMapping("/commit/{projectName}/{commitHash}")
-    public ResponseEntity<List<BenchmarkResult>> getResultsForCommit(@PathVariable String projectName,
-                                                                     @PathVariable String commitHash) {
-        List<BenchmarkResult> results = benchmarkStorageService.getResultsForCommit(commitHash, projectName);
-        return ResponseEntity.ok(results);
+    @GetMapping("/commit/{commitHash}")
+    public ResponseEntity<List<BenchmarkResultDto>> getResultsForCommit(
+            @RequestParam(name = "projectPath") String projectPath,
+            @PathVariable(name = "commitHash") String commitHash) {
+        Path path = Paths.get(projectPath);
+        FileBenchmarkStorageService storageService = new FileBenchmarkStorageService(path);
+        String projectName = path.getFileName().toString();
+
+        List<BenchmarkResult> results = storageService.getResultsForCommit(commitHash, projectName);
+        List<BenchmarkResultDto> dtos = results.stream()
+                .map(BenchmarkResultDto::fromModel)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/method")
+    public ResponseEntity<List<BenchmarkResultDto>> getResultsForMethod(
+            @RequestParam(name = "projectPath") String projectPath,
+            @RequestParam(name = "className") String className,
+            @RequestParam(name = "methodName") String methodName) {
+        Path path = Paths.get(projectPath);
+        FileBenchmarkStorageService storageService = new FileBenchmarkStorageService(path);
+        String projectName = path.getFileName().toString();
+
+        model.MethodSignature method = new model.MethodSignature();
+        method.setClassName(className);
+        method.setMethodName(methodName);
+        List<BenchmarkResult> results = storageService.getResultsForMethod(method, projectName);
+        List<BenchmarkResultDto> dtos = results.stream()
+                .map(BenchmarkResultDto::fromModel)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 }
